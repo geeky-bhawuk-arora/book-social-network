@@ -1,0 +1,15 @@
+spring:
+  datasource:
+    url: jdbc:postgresql://localhost:5432/book_social_network
+    username: username  
+    password: password
+    driver-class-name: org.postgresql.Driver
+  jpa:
+    hibernate:
+        ddl-auto: update
+    show-sql: false
+    properties:
+        hibernate:
+            format-sql: true
+    database: postgresql
+    database-platform: org.hibernate.dialect.PostgreSLDialect
