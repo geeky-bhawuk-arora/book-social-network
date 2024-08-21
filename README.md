@@ -5,7 +5,7 @@ Book Social Network is a full-stack application that enables users to manage the
 ## Table of Contents
 
 
-## Bussiness Requirements
+## Business Requirements
 
 ### Book Management
 ### Book Sharing
