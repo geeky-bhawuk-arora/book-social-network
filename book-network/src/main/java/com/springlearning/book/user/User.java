@@ -1,26 +1,37 @@
 package com.springlearning.book.user;
 
-import java.security.Principal;
-import java.time.LocalDate;
-import java.time.LocalDateTime;
-
-import org.springframework.data.jpa.domain.support.AuditingEntityListener;
-import org.springframework.security.core.userdetails.UserDetails;
+import com.springlearning.book.role.Role;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EntityListeners;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.Id;
+import jakarta.persistence.ManyToMany;
+import jakarta.persistence.OneToMany;
 import jakarta.persistence.Table;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
-
+import lombok.experimental.SuperBuilder;
 import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.annotation.LastModifiedDate;
+import org.springframework.data.jpa.domain.support.AuditingEntityListener;
+import org.springframework.security.core.GrantedAuthority;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
+import org.springframework.security.core.userdetails.UserDetails;
+
+import java.security.Principal;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.util.Collection;
+import java.util.List;
+import java.util.stream.Collectors;
+
+import static jakarta.persistence.FetchType.EAGER;
+
 @Getter
 @Setter
 @NoArgsConstructor
@@ -30,27 +41,43 @@ import org.springframework.data.annotation.LastModifiedDate;
 @EntityListeners(AuditingEntityListener.class)
 public class User implements UserDetails, Principal {
 
-    @Id
-    @GeneratedValue
-    private Integer id;
-    private String firstName;
-    private String lastName;
-    private LocalDate dateOfBirth;
-    @Column(unique = true)
-    private String email;
-    private String password;
-    private boolean accountLocked;
-    private boolean enabled;
+	@Id
+	@GeneratedValue
+	private Integer id;
+	private String firstName;
+	private String lastName;
+	private LocalDate dateOfBirth;
+	@Column(unique = true)
+	private String email;
+	private String password;
+	private boolean accountLocked;
+	private boolean enabled;
 
-    @CreatedDate
-    @Column(nullable = false, updatable = false)
-    private LocalDateTime createdDate;
+	@ManyToMany(fetch = EAGER)
+	private List<Role> roles;
 
-    @LastModifiedDate
-    @Column(insertable = false)
-    private LocalDateTime lastModifiedDate;
+	@CreatedDate
+	@Column(nullable = false, updatable = false)
+	private LocalDateTime createdDate;
 
-    @Override
+	@LastModifiedDate
+	@Column(insertable = false)
+	private LocalDateTime lastModifiedDate;
+
+	@Override
+	public String getName() {
+		return email;
+	}
+
+	@Override
+	public Collection<? extends GrantedAuthority> getAuthorities() {
+		return this.roles
+				.stream()
+				.map(r -> new SimpleGrantedAuthority(r.getName()))
+				.collect(Collectors.toList()));
+	}
+
+	@Override
 	public String getPassword() {
 		return password;
 	}
@@ -61,18 +88,21 @@ public class User implements UserDetails, Principal {
 	}
 
 	@Override
-	public boolean isEnabled() {
-		return enabled;
-	}
-
-	
-	@Override
-	public boolean isAccountNonLocked() {
-		return this.accountNonLocked;
+	public boolean isAccountNonExpired() {
+		return true;
 	}
 
 	@Override
 	public boolean isCredentialsNonExpired() {
 		return true;
+	}
+
+	@Override
+	public boolean isEnabled() {
+		return enabled;
+	}
+
+	private String fullName() {
+		return firstName + lastName;
 	}
 }
